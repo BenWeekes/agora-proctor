@@ -56,8 +56,8 @@ async function detectionLoop() {
       const img = new Image(128, 128);
       img.onload = () => {
         human.detect(img).then((res2) => {
-          console.log(res2);
-          console.log(res2.face.embedding);
+       //   console.log(res2);
+       //   console.log(res2.face.embedding);
           dom.compareImg=res2;
         });
       };
