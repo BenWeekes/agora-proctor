@@ -69,7 +69,7 @@ async function detectionLoop() {
 
     if (dom.compareUrl && dom.compareImg) {
       var x= await human.match(res1.face.embedding, dom.compareImg.face.embedding);
-      console.log(x,x.similarity);
+      //console.log(x,x.similarity);
       document.getElementById("similarity").value=x.similarity;
 
     }
