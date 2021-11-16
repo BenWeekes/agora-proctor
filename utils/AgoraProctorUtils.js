@@ -1,6 +1,9 @@
+import { human_start, human_match, base64DecToArr } from "../human/embed.js";
+
 var AgoraProctorUtils = (function () {
 
   const BrowserFocus="BrowserFocus";
+  const FaceDetected="FaceDetected";
   const BrowserChangeAlert="BrowserChangeAlert";
   const Background="background";
   const Foreground="foreground";
@@ -28,14 +31,48 @@ var AgoraProctorUtils = (function () {
     window.addEventListener("resize", function() {
       AgoraProctorUtilEvents.emit(BrowserChangeAlert, Resize );   
     });
-
-
   }
   
+  function faceDetect(canvas,video) {
+    human_start(canvas,video);
+  }
+
+  async function snap(video, preview) {
+  
+    var  ctx= preview.getContext('2d');
+    //ctx.canvas.width = 640;
+    //ctx.canvas.height = 480;
+    ctx.drawImage(video, 0, 0);//,640, 480,0,0,320,240);
+    var image_data_uri=preview.toDataURL("image/jpeg", 0.9);
+    var raw_image_data = image_data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
+    var http = new XMLHttpRequest();
+    http.open("POST", "https://sa-utils.agora.io/upload", true);
+    var image_fmt = '';
+    if (image_data_uri.match(/^data\:image\/(\w+)/)) {
+        image_fmt = RegExp.$1;
+    }
+  
+    var blob = new Blob( [ base64DecToArr(raw_image_data) ], {type: 'image/'+image_fmt} );
+    var form = new FormData();
+    var fid=(Math.random()*1000000000000000).toFixed(0);
+    var fileup=fid+".jpg";
+    form.append( "uploads", blob, fileup);
+    http.send(form);
+    var imgurl="https://sa-utils.agora.io/files/"+fileup
+    human_match(image_data_uri);
+    return imgurl;
+  }
+
   // public methods
   return { 
     init: function () {
       init();
+    },
+    faceDetect: function (canvas,video) {
+      faceDetect(canvas,video);
+    },
+    snap: function (video, preview) {
+      return snap(video, preview);
     },
     BrowserFocus: BrowserFocus,
     Background: Background,
@@ -43,6 +80,7 @@ var AgoraProctorUtils = (function () {
     BrowserChangeAlert: BrowserChangeAlert,
     Hidden: Hidden,
     Resize: Resize,
+    FaceDetected: FaceDetected,
 
   };
 
@@ -83,3 +121,5 @@ var AgoraProctorUtilEvents = (function () {
   };
 
 })();
+
+export {AgoraProctorUtils, AgoraProctorUtilEvents};

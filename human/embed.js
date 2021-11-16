@@ -1,4 +1,5 @@
 import { Human } from "./assets/human.esm.js";
+import { AgoraProctorUtils, AgoraProctorUtilEvents } from "../utils/AgoraProctorUtils.js";
 
 var humanConfig = {
   modelBasePath: "./human/assets/models",
@@ -8,9 +9,9 @@ var humanConfig = {
     //detector: { rotation: true, return: true, cropFactor: 1.6, mask: false }, // return tensor is used to get detected face image
     detector: { rotation: true, return: true, cropFactor: 1.6, mask: false },
     //detector: { rotation: false}, // return tensor is used to get detected face image
-    description: { enabled: false },
+    description: { enabled: true },
     iris: { enabled: true }, // needed to determine gaze direction
-    emotion: { enabled: false }, // not needed
+    emotion: { enabled: true }, // not needed
     antispoof: { enabled: false }, // enable optional antispoof module
     liveness: { enabled: false }, // enable optional liveness module
   },
@@ -47,32 +48,6 @@ var log = (...msg) => {
 var status = (msg) => dom.fps.innerText = msg;
 var perf = (msg) => dom.perf.innerText = "tensors:" + human.tf.memory().numTensors + " | performance: " + JSON.stringify(msg).replace(/"|{|}/g, "").replace(/,/g, " | ");
 
-async function webCam() {
-  const options = { audio: false, video: { facingMode: "user", resizeMode: "none", width: { ideal: document.body.clientWidth } } };
-  const stream = await navigator.mediaDevices.getUserMedia(options);
-  const ready = new Promise((resolve) => {
-    dom.video.onloadeddata = () => resolve(true);
-  });
-  dom.video.srcObject = stream;
-  dom.video.play();
-  await ready;
-  dom.canvas.width = dom.video.videoWidth;
-  dom.canvas.height = dom.video.videoHeight;
-  const track = stream.getVideoTracks()[0];
-  const capabilities = track.getCapabilities ? track.getCapabilities() : "";
-  const settings = track.getSettings ? track.getSettings() : "";
-  const constraints = track.getConstraints ? track.getConstraints() : "";
-  log("video:", dom.video.videoWidth, dom.video.videoHeight, track.label, { stream, track, settings, constraints, capabilities });
-  dom.canvas.onclick = () => {
-    if (dom.video.paused)
-      dom.video.play();
-    else
-      dom.video.pause();
-  };
-}
-
-
-
 async function detectionLoop() {
   if (!dom.video.paused) {
     
@@ -107,37 +82,23 @@ async function detectionLoop() {
   requestAnimationFrame(detectionLoop);
 }
 
-export function base64DecToArr(sBase64, nBlocksSize) {
-
-  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length,
-    nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2, 
-    taBytes = new Uint8Array(nOutLen);
-  
-  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
-    nMod4 = nInIdx & 3;
-    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
-    if (nMod4 === 3 || nInLen - nInIdx === 1) {
-      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
-        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
-      }
-      nUint24 = 0;
-    }
-  }
-  return taBytes;
-}
-
-function b64ToUint6 (nChr) {
-  // convert base64 encoded character to 6-bit integer
-  // from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding
-  return nChr > 64 && nChr < 91 ? nChr - 65
-    : nChr > 96 && nChr < 123 ? nChr - 71
-    : nChr > 47 && nChr < 58 ? nChr + 4
-    : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
-}
+var interpolated_prev=0;
 
 async function drawLoop() {
   if (!dom.video.paused) {
     const interpolated = await human.next(human.result);
+    var faces=interpolated.face.length;
+    if (interpolated.face.length>0){
+      var box=interpolated.face[0].box;
+      if (box[0]<2 && box[1]<2 && box[2]<2 && box[3]<2 ) {
+        faces=0;
+      }
+    }     
+
+    if (faces!=interpolated_prev) {    
+      AgoraProctorUtilEvents.emit(AgoraProctorUtils.FaceDetected,faces);
+      interpolated_prev=faces;
+    }
     await human.draw.canvas(dom.video, dom.canvas);
     await human.draw.all(dom.canvas, interpolated);
     //perf(interpolated.performance);
@@ -164,4 +125,32 @@ export async function human_start(canvas, video) {
   await human.warmup();
   await detectionLoop();
   await drawLoop();
+}
+
+export function base64DecToArr(sBase64, nBlocksSize) {
+
+  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length,
+    nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2, 
+    taBytes = new Uint8Array(nOutLen);
+  
+  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
+    nMod4 = nInIdx & 3;
+    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+    if (nMod4 === 3 || nInLen - nInIdx === 1) {
+      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
+        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
+      }
+      nUint24 = 0;
+    }
+  }
+  return taBytes;
+}
+
+function b64ToUint6 (nChr) {
+  // convert base64 encoded character to 6-bit integer
+  // from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding
+  return nChr > 64 && nChr < 91 ? nChr - 65
+    : nChr > 96 && nChr < 123 ? nChr - 71
+    : nChr > 47 && nChr < 58 ? nChr + 4
+    : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
 }

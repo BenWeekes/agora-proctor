@@ -1,5 +1,3 @@
-import { human_start, human_match, base64DecToArr } from "./human/embed.js";
-
 var client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
 var localTracks = {
@@ -64,48 +62,12 @@ $("#leave").click(function (e) {
   leave();
 });
 
-$("#face").click(function (e) {
-  face();
-});
 
-async function face() {
-  var vels=document.getElementsByTagName("video");
-  human_start(document.getElementById("canvas"),vels[0]);
-}
+ 
 
-$("#snap").click(function (e) {
-  snap();
-});
 
-async function snap() {
-  var preview=document.getElementById("preview");
-  var canvas=document.getElementById("canvas");
-  var vels=document.getElementsByTagName("video");
 
-  var  ctx= preview.getContext('2d');
-  ctx.canvas.width = 640;
-  ctx.canvas.height = 480;
-  ctx.drawImage(vels[0], 0, 0);//,640, 480,0,0,320,240);
-  var image_data_uri=preview.toDataURL("image/jpeg", 0.9);
 
-  var raw_image_data = image_data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
-  var http = new XMLHttpRequest();
-  http.open("POST", "https://sa-utils.agora.io/upload", true);
-  var image_fmt = '';
-	if (image_data_uri.match(/^data\:image\/(\w+)/)) {
-			image_fmt = RegExp.$1;
-  }
-
-  var blob = new Blob( [ base64DecToArr(raw_image_data) ], {type: 'image/'+image_fmt} );
-  var form = new FormData();
-  var fid=(Math.random()*1000000000000000).toFixed(0);
-  var fileup=fid+".jpg";
-  form.append( "uploads", blob, fileup);
-  http.send(form);
-  var imgurl="https://sa-utils.agora.io/files/"+fileup
-  console.log(imgurl);
-  human_match(image_data_uri);
-}
 
 
 $("#mute-audio").click(function (e) {
