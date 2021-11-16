@@ -81541,13 +81541,14 @@ async function face(inCanvas2, result, drawOptions) {
       rect(ctx, f.box[0], f.box[1], f.box[2], f.box[3], localOptions);
     if (localOptions.drawLabels) {
       const labels2 = [];
-      labels2.push(`face: ${Math.trunc(100 * f.score)}%`);
+     // labels2.push(`face: ${Math.trunc(100 * f.score)}%`);
+     labels2.push(` `);
       if (f.genderScore)
         labels2.push(`${f.gender || ""} ${Math.trunc(100 * f.genderScore)}%`);
       if (f.age)
         labels2.push(`age: ${f.age || ""}`);
-      if (f.iris)
-        labels2.push(`distance: ${f.iris}`);
+      //if (f.iris)
+      //  labels2.push(`distance: ${f.iris}`);
       if (f.real)
         labels2.push(`real: ${Math.trunc(100 * f.real)}%`);
       if (f.live)
@@ -81556,13 +81557,17 @@ async function face(inCanvas2, result, drawOptions) {
         const emotion3 = f.emotion.map((a) => `${Math.trunc(100 * a.score)}% ${a.emotion}`);
         if (emotion3.length > 3)
           emotion3.length = 3;
-        labels2.push(emotion3.join(" "));
+        //labels2.push(emotion3.join(" "));
+        for  (let i = 0 ; i < emotion3.length; i++) {
+          labels2.push(emotion3[i]);
+        }
+        
       }
       if (f.rotation && f.rotation.angle && f.rotation.gaze) {
-        if (f.rotation.angle.roll)
-          labels2.push(`roll: ${rad2deg(f.rotation.angle.roll)}\xB0 yaw:${rad2deg(f.rotation.angle.yaw)}\xB0 pitch:${rad2deg(f.rotation.angle.pitch)}\xB0`);
-        if (f.rotation.gaze.bearing)
-          labels2.push(`gaze: ${rad2deg(f.rotation.gaze.bearing)}\xB0`);
+       // if (f.rotation.angle.roll)
+        //  labels2.push(`roll: ${rad2deg(f.rotation.angle.roll)}\xB0 yaw:${rad2deg(f.rotation.angle.yaw)}\xB0 pitch:${rad2deg(f.rotation.angle.pitch)}\xB0`);
+     //   if (f.rotation.gaze.bearing)
+     //     labels2.push(`gaze: ${rad2deg(f.rotation.gaze.bearing)}\xB0`);
       }
       if (labels2.length === 0)
         labels2.push("face");
@@ -81621,7 +81626,7 @@ async function face(inCanvas2, result, drawOptions) {
           }
         }
         if (localOptions.drawGaze && ((_a = f.rotation) == null ? void 0 : _a.angle) && typeof Path2D !== "undefined") {
-          ctx.strokeStyle = "pink";
+          ctx.strokeStyle = "lime";
           const valX = f.box[0] + f.box[2] / 2 - f.box[3] * rad2deg(f.rotation.angle.yaw) / 90;
           const valY = f.box[1] + f.box[3] / 2 + f.box[2] * rad2deg(f.rotation.angle.pitch) / 90;
           const pathV = new Path2D(`
@@ -81642,8 +81647,8 @@ async function face(inCanvas2, result, drawOptions) {
           ctx.stroke(pathV);
         }
         if (localOptions.drawGaze && ((_c = (_b = f.rotation) == null ? void 0 : _b.gaze) == null ? void 0 : _c.strength) && ((_e = (_d = f.rotation) == null ? void 0 : _d.gaze) == null ? void 0 : _e.bearing) && f.annotations["leftEyeIris"] && f.annotations["rightEyeIris"] && f.annotations["leftEyeIris"][0] && f.annotations["rightEyeIris"][0]) {
-          ctx.strokeStyle = "pink";
-          ctx.fillStyle = "pink";
+          ctx.strokeStyle = "lime";
+          ctx.fillStyle = "lime";
           const leftGaze = [
             f.annotations["leftEyeIris"][0][0] + Math.sin(f.rotation.gaze.bearing) * f.rotation.gaze.strength * f.box[3],
             f.annotations["leftEyeIris"][0][1] + Math.cos(f.rotation.gaze.bearing) * f.rotation.gaze.strength * f.box[2]

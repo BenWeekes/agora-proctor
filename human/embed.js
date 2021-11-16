@@ -24,8 +24,26 @@ var humanConfig = {
 var human = new Human(humanConfig);
 
 human.env["perfadd"] = false;
-human.draw.options.font = 'small-caps 18px "Lato"';
-human.draw.options.lineHeight = 20;
+human.draw.options.font = 'small-caps 28px "Lato"';
+human.draw.options.lineHeight = 32;
+
+
+const drawOptions = {
+  color: "#007bff",
+  labelColor: "#d9e7f7",
+  shadowColor: "#666",
+  bufferedOutput: true, // makes draw functions interpolate results between each detection for smoother movement
+  drawBoxes: true,
+  drawGaze: true,
+  drawLabels: true,
+  drawGestures: false ,
+  drawPolygons: true,
+  drawPoints: false,
+  fillPolygons: false,
+  useCurves: false,
+  useDepth: true,
+};
+
 
 var dom = {
   video: document.getElementById("video"),
@@ -100,7 +118,7 @@ async function drawLoop() {
       interpolated_prev=faces;
     }
     await human.draw.canvas(dom.video, dom.canvas);
-    await human.draw.all(dom.canvas, interpolated);
+    await human.draw.all(dom.canvas, interpolated,drawOptions );
     //perf(interpolated.performance);
   }
   const now = human.now();
