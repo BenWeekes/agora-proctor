@@ -1,4 +1,5 @@
-import { human_start, human_match, base64DecToArr } from "../human/embed.js";
+import { human_start, human_match, base64DecToArr } from "https://sa-utils.agora.io/agora-proctor/human/embed.js";
+//import { human_start, human_match, base64DecToArr } from "../human/embed.js";
 
 var AgoraProctorUtils = (function () {
 
