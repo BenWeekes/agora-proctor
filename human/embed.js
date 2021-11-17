@@ -1,8 +1,8 @@
-import { Human } from "./assets/human.esm.js";
-import { AgoraProctorUtils, AgoraProctorUtilEvents } from "../utils/AgoraProctorUtils.js";
+import { Human } from "https://sa-utils.agora.io/agora-proctor/human/assets/human.esm.js";
+import { AgoraProctorUtils, AgoraProctorUtilEvents } from "https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js";
 
 var humanConfig = {
-  modelBasePath: "./human/assets/models",
+  modelBasePath: "https://sa-utils.agora.io/agora-proctor/human/assets/models",
   filter: { equalization: false },
   face: {
     enabled: true,
