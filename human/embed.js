@@ -1,5 +1,6 @@
 import { Human } from "https://sa-utils.agora.io/agora-proctor/human/assets/human.esm.js";
 import { AgoraProctorUtils, AgoraProctorUtilEvents } from "https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js";
+//import { AgoraProctorUtils, AgoraProctorUtilEvents } from "../utils/AgoraProctorUtils.js";
 
 var humanConfig = {
   modelBasePath: "https://sa-utils.agora.io/agora-proctor/human/assets/models",
@@ -70,26 +71,27 @@ async function detectionLoop() {
   if (!dom.video.paused) {
     
     var res1=await human.detect(dom.video);
+    // compare to photoId
     if (dom.compareUrl && !dom.compareImg) {
-      const img = new Image(128, 128);
+      human.tf.dispose(res1.face.tensor);
+      const img = new Image();
       img.onload = () => {
         human.detect(img).then((res2) => {
-       //   console.log(res2);
-       //   console.log(res2.face.embedding);
           dom.compareImg=res2;
         });
       };
       img.onerror = () => {
-        log('Add image error:', index + 1, image);
+        log('Add image error:',dom.compareUrl);
       };
       img.src = encodeURI(dom.compareUrl);
     }
 
     if (dom.compareUrl && dom.compareImg) {
-      var x= await human.match(res1.face.embedding, dom.compareImg.face.embedding);
-      //console.log(x,x.similarity);
-      document.getElementById("similarity").value=x.similarity;
-
+      var x=0;
+      if (res1 && res1.face && dom.compareImg.face.length>0 && res1 && dom.compareImg.face && dom.compareImg.face.length>0 ){
+        x= await human.similarity(res1.face[0].embedding, dom.compareImg.face[0].embedding);
+      }
+      AgoraProctorUtilEvents.emit(AgoraProctorUtils.FaceSimilarity,x);      
     }
     const tensors = human.tf.memory().numTensors;
     timestamp.tensors = tensors;
@@ -132,6 +134,7 @@ export async function human_match(compare) {
   dom.compareImg=null;
   dom.compareUrl=compare;
 }
+
 
 export async function human_start(canvas, video) {
   dom.canvas=canvas;

@@ -117,11 +117,14 @@
   <script src="./assets/jquery-3.4.1.min.js"></script>
   <script src="./assets/bootstrap.bundle.min.js"></script>
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-  <script src="https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js" type="module"></script>
-  
+  <script src="./basicMute.js"></script>
 
+  <script src="https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js" type="module"></script>
+  <!-- script src="./utils/AgoraProctorUtils.js" type="module"></script -->
   <script type="module">
     import { AgoraProctorUtils, AgoraProctorUtilEvents } from "https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js";
+
+    //import { AgoraProctorUtils, AgoraProctorUtilEvents } from "./utils/AgoraProctorUtils.js";
 
     function processEvent(evt) {
       console.log(" BrowserChangeAlert  ", evt);
@@ -134,9 +137,15 @@
       console.log(" Faces Detected count="+evt);
     }
 
+    function faceSimilarity(evt) {
+      document.getElementById("similarity").value=evt;
+    }
+
     $("#face").click(function (e) {
+      AgoraProctorUtils.startVoiceActivityDetection(localTracks.audioTrack);
       AgoraProctorUtils.faceDetect(document.getElementById("canvas"), document.getElementsByTagName("video")[0]);
       AgoraProctorUtilEvents.on(AgoraProctorUtils.FaceDetected, facesDetected);
+      AgoraProctorUtilEvents.on(AgoraProctorUtils.FaceSimilarity, faceSimilarity);
     });
 
     $("#snap").click(function (e) {
@@ -144,10 +153,9 @@
         alert(result);
       });
     });
-
+        
   </script>
 
-  <script src="./basicMute.js"></script>
 </body>
 
 </html>

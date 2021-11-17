@@ -5,14 +5,32 @@ var AgoraProctorUtils = (function () {
 
   const BrowserFocus="BrowserFocus";
   const FaceDetected="FaceDetected";
+  const FaceSimilarity="FaceSimilarity";
+  
   const BrowserChangeAlert="BrowserChangeAlert";
   const Background="background";
   const Foreground="foreground";
+  const VoiceActivityDetected="voiceActivityDetected";
+  
   const Hidden="hidden";
   const Resize="resize";
 
   const ResizeMinInterval=2000;
+  const VADMinInterval=6000;
   var _lastResizeEvent=0;
+  var _lastVADEvent=0;
+
+  var _vad_audioTrack = null;
+  var _voiceActivityDetectionFrequency = 150;
+  var _vad_MaxAudioSamples = 400;
+  var _vad_MaxBackgroundNoiseLevel = 30;
+  var _vad_SilenceOffeset = 10;
+  var _vad_audioSamplesArr = [];
+  var _vad_audioSamplesArrSorted = [];
+  var _vad_exceedCount = 0;
+  var _vad_exceedCountThreshold = 1;
+  var _vad_exceedCountThresholdLow = 1;
+  var _voiceActivityDetectionInterval;
   
   
   // private methods
@@ -72,6 +90,56 @@ var AgoraProctorUtils = (function () {
     return imgurl;
   }
 
+  function getInputLevel(track) {
+    var analyser = track._source.analyserNode;
+    const bufferLength = analyser.frequencyBinCount;
+    var data = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(data);
+    var values = 0;
+    var average;
+    var length = data.length;
+    for (var i = 0; i < length; i++) {
+      values += data[i];
+    }
+    average = Math.floor(values / length);
+    return average;
+  }
+
+  function voiceActivityDetection() {
+    if (!_vad_audioTrack || !_vad_audioTrack._enabled)
+      return;
+
+    var audioLevel = getInputLevel(_vad_audioTrack);
+    if (audioLevel <= _vad_MaxBackgroundNoiseLevel) {
+      if (_vad_audioSamplesArr.length >= _vad_MaxAudioSamples) {
+        var removed = _vad_audioSamplesArr.shift();
+        var removedIndex = _vad_audioSamplesArrSorted.indexOf(removed);
+        if (removedIndex > -1) {
+          _vad_audioSamplesArrSorted.splice(removedIndex, 1);
+        }
+      }
+      _vad_audioSamplesArr.push(audioLevel);
+      _vad_audioSamplesArrSorted.push(audioLevel);
+      _vad_audioSamplesArrSorted.sort((a, b) => a - b);
+    }
+    var background = Math.floor(3 * _vad_audioSamplesArrSorted[Math.floor(_vad_audioSamplesArrSorted.length / 2)] / 2);
+    if (audioLevel > background + _vad_SilenceOffeset) {
+      _vad_exceedCount++;
+    } else {
+      _vad_exceedCount = 0;
+    }
+
+    if (_vad_exceedCount > _vad_exceedCountThreshold) {
+      var now=Date.now(); 
+      if (now-_lastVADEvent > VADMinInterval) {
+        AgoraProctorUtilEvents.emit(BrowserChangeAlert, VoiceActivityDetected);
+        _lastVADEvent=now;
+      }   
+      _vad_exceedCount = 0;
+    }
+
+  }
+
   // public methods
   return { 
     init: function () {
@@ -83,6 +151,20 @@ var AgoraProctorUtils = (function () {
     snap: function (video, preview) {
       return snap(video, preview);
     },
+    startVoiceActivityDetection: function (vad_audioTrack) {
+      _vad_audioTrack = vad_audioTrack;
+      if (_voiceActivityDetectionInterval) {
+        return;
+      }
+      _voiceActivityDetectionInterval = setInterval(() => {
+        voiceActivityDetection();
+      }, _voiceActivityDetectionFrequency);
+    },
+    stopVoiceActivityDetection: function () {
+      clearInterval(_voiceActivityDetectionInterval);
+      _voiceActivityDetectionInterval = null;
+    },
+
     BrowserFocus: BrowserFocus,
     Background: Background,
     Foreground: Foreground,
