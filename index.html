@@ -117,26 +117,23 @@
   <script src="./assets/jquery-3.4.1.min.js"></script>
   <script src="./assets/bootstrap.bundle.min.js"></script>
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-
-  <script src="./utils/AgoraProctorUtils.js" type="module"></script>
+  <script src="https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js" type="module"></script>
+  
 
   <script type="module">
-    import { AgoraProctorUtils, AgoraProctorUtilEvents } from "./utils/AgoraProctorUtils.js";
+    import { AgoraProctorUtils, AgoraProctorUtilEvents } from "https://sa-utils.agora.io/agora-proctor/utils/AgoraProctorUtils.js";
 
     function processEvent(evt) {
       console.log(" BrowserChangeAlert  ", evt);
     }
 
-
     AgoraProctorUtils.init();
     AgoraProctorUtilEvents.on(AgoraProctorUtils.BrowserChangeAlert, processEvent);
-
 
     function facesDetected(evt) {
       console.log(" Faces Detected count="+evt);
     }
 
-    
     $("#face").click(function (e) {
       AgoraProctorUtils.faceDetect(document.getElementById("canvas"), document.getElementsByTagName("video")[0]);
       AgoraProctorUtilEvents.on(AgoraProctorUtils.FaceDetected, facesDetected);
@@ -151,7 +148,6 @@
   </script>
 
   <script src="./basicMute.js"></script>
-  <script src="./human/embed.js" type="module"></script>
 </body>
 
 </html>

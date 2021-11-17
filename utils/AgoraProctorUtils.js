@@ -9,6 +9,10 @@ var AgoraProctorUtils = (function () {
   const Foreground="foreground";
   const Hidden="hidden";
   const Resize="resize";
+
+  const ResizeMinInterval=2000;
+  var _lastResizeEvent=0;
+  
   
   // private methods
   function init() {
@@ -29,7 +33,11 @@ var AgoraProctorUtils = (function () {
     });
  
     window.addEventListener("resize", function() {
-      AgoraProctorUtilEvents.emit(BrowserChangeAlert, Resize );   
+      var now=Date.now(); 
+      if (now-_lastResizeEvent > ResizeMinInterval) {
+        AgoraProctorUtilEvents.emit(BrowserChangeAlert, Resize );   
+        _lastResizeEvent=now;
+      }      
     });
   }
   
