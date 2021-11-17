@@ -52,6 +52,7 @@ var dom = {
   stream: null,
   compareImg: null,
   compareUrl: null,
+  similarity: 0,
   log: document.getElementById("log"),
   fps: document.getElementById("status"),
   perf: document.getElementById("performance")
@@ -91,7 +92,9 @@ async function detectionLoop() {
       if (res1 && res1.face && dom.compareImg.face.length>0 && res1 && dom.compareImg.face && dom.compareImg.face.length>0 ){
         x= await human.similarity(res1.face[0].embedding, dom.compareImg.face[0].embedding);
       }
-      AgoraProctorUtilEvents.emit(AgoraProctorUtils.FaceSimilarity,x);      
+      AgoraProctorUtilEvents.emit(AgoraProctorUtils.FaceSimilarity,x);   
+      dom.similarity=x;   
+
     }
     const tensors = human.tf.memory().numTensors;
     timestamp.tensors = tensors;
@@ -119,8 +122,18 @@ async function drawLoop() {
       AgoraProctorUtilEvents.emit(AgoraProctorUtils.FaceDetected,faces);
       interpolated_prev=faces;
     }
-    await human.draw.canvas(dom.video, dom.canvas);
+    await human.draw.canvas(dom.video, dom.canvas); // clear
     await human.draw.all(dom.canvas, interpolated,drawOptions );
+    var ctx = dom.canvas.getContext('2d');
+    ctx.font = '24px serif';
+    if (dom.similarity) {
+      var display=dom.similarity;
+      if (display>0) {
+        display=display.toFixed(2);
+        ctx.fillText('Match '+display, 2, 26);
+      }
+      
+    }
     //perf(interpolated.performance);
   }
   const now = human.now();
