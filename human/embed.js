@@ -10,16 +10,16 @@ var humanConfig = {
     //detector: { rotation: true, return: true, cropFactor: 1.6, mask: false }, // return tensor is used to get detected face image
     detector: { rotation: true, return: true, cropFactor: 1.6, mask: false },
     //detector: { rotation: false}, // return tensor is used to get detected face image
-    description: { enabled: true },
-    iris: { enabled: true }, // needed to determine gaze direction
-    emotion: { enabled: true }, // not needed
+    description: { enabled: false },
+    iris: { enabled: false }, // needed to determine gaze direction
+    emotion: { enabled: false }, // not needed
     antispoof: { enabled: false }, // enable optional antispoof module
     liveness: { enabled: false }, // enable optional liveness module
   },
   body: { enabled: false },
   hand: { enabled: false },
   object: { enabled: false },
-  gesture: { enabled: true }, // parses face and iris gestures//options
+  gesture: { enabled: false }, // parses face and iris gestures//options
 };
 
 var human = new Human(humanConfig);
@@ -47,11 +47,12 @@ const drawOptions = {
 
 
 var dom = {
-  video: document.getElementById("video"),
-  canvas: document.getElementById("canvas"),
+  video: null, //document.getElementById("video"),
+  canvas: null, //document.getElementById("canvas"),
   stream: null,
   compareImg: null,
   compareUrl: null,
+  init: false,
   similarity: 0,
   log: document.getElementById("log"),
   fps: document.getElementById("status"),
@@ -69,12 +70,16 @@ var status = (msg) => dom.fps.innerText = msg;
 var perf = (msg) => dom.perf.innerText = "tensors:" + human.tf.memory().numTensors + " | performance: " + JSON.stringify(msg).replace(/"|{|}/g, "").replace(/,/g, " | ");
 
 async function detectionLoop() {
-  if (!dom.video.paused) {
+  if (dom.video && !dom.video.paused) {
     
     var res1=await human.detect(dom.video);
     // compare to photoId
     if (dom.compareUrl && !dom.compareImg) {
-      human.tf.dispose(res1.face.tensor);
+
+      if (res1 && res1.face && res1.face.tensor) {
+      	human.tf.dispose(res1.face.tensor);
+      }
+
       const img = new Image();
       img.onload = () => {
         human.detect(img).then((res2) => {
@@ -89,7 +94,7 @@ async function detectionLoop() {
 
     if (dom.compareUrl && dom.compareImg) {
       var x=0;
-      if (res1 && res1.face && dom.compareImg.face.length>0 && res1 && dom.compareImg.face && dom.compareImg.face.length>0 ){
+      if (res1 && res1.face && res1.face.length>0 && res1.face[0].embedding && dom.compareImg && dom.compareImg.face && dom.compareImg.face.length>0 &&  dom.compareImg.face[0].embedding){
         x= await human.similarity(res1.face[0].embedding, dom.compareImg.face[0].embedding);
       }
       AgoraProctorUtilEvents.emit(AgoraProctorUtils.FaceSimilarity,x);   
@@ -108,7 +113,7 @@ async function detectionLoop() {
 var interpolated_prev=0;
 
 async function drawLoop() {
-  if (!dom.video.paused) {
+  if (dom.video && !dom.video.paused) {
     const interpolated = await human.next(human.result);
     var faces=interpolated.face.length;
     if (interpolated.face.length>0){
@@ -125,12 +130,13 @@ async function drawLoop() {
     await human.draw.canvas(dom.video, dom.canvas); // clear
     await human.draw.all(dom.canvas, interpolated,drawOptions );
     var ctx = dom.canvas.getContext('2d');
-    ctx.font = '24px serif';
+    ctx.font = '16px serif';
     if (dom.similarity) {
       var display=dom.similarity;
       if (display>0) {
         display=display.toFixed(2);
-        ctx.fillText('Match '+display, 2, 26);
+	ctx.fillStyle = 'orange';
+        ctx.fillText('MATCH '+display, 40, 26);
       }
       
     }
@@ -152,13 +158,19 @@ export async function human_match(compare) {
 export async function human_start(canvas, video) {
   dom.canvas=canvas;
   dom.video=video;
+
+  //if (dom.canvas || dom.video)
+//	return;
   //dom.canvas.width = dom.video.videoWidth;
   //dom.canvas.height = dom.video.videoHeight;
 
-  await human.load();
-  await human.warmup();
-  await detectionLoop();
-  await drawLoop();
+  if (!dom.init){ 
+   dom.init=true;
+   await human.load();
+   await human.warmup();
+   await detectionLoop();
+   await drawLoop();
+  }
 }
 
 export function base64DecToArr(sBase64, nBlocksSize) {
