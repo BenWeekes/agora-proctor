@@ -128,6 +128,7 @@ async function drawLoop() {
       interpolated_prev=faces;
     }
     await human.draw.canvas(dom.video, dom.canvas); // clear
+
     await human.draw.all(dom.canvas, interpolated,drawOptions );
     var ctx = dom.canvas.getContext('2d');
     ctx.font = '16px serif';
@@ -166,10 +167,10 @@ export async function human_start(canvas, video) {
 
   if (!dom.init){ 
    dom.init=true;
+   await drawLoop();
    await human.load();
    await human.warmup();
    await detectionLoop();
-   await drawLoop();
   }
 }
 
