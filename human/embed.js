@@ -157,14 +157,10 @@ export async function human_match(compare) {
 
 
 export async function human_start(canvas, video) {
-  dom.canvas=canvas;
-  dom.video=video;
-
-  //if (dom.canvas || dom.video)
-//	return;
-  //dom.canvas.width = dom.video.videoWidth;
-  //dom.canvas.height = dom.video.videoHeight;
-
+  if (dom.canvas!==canvas)
+  	dom.canvas=canvas;
+  if (dom.video!==video)
+  	dom.video=video;
   if (!dom.init){ 
    dom.init=true;
    await drawLoop();
