@@ -1,0 +1,90 @@
+resolver 8.8.8.8;
+
+log_format postdata $request_body;
+server {
+        listen [::]:443 ssl ipv6only=on; # managed by Certbot
+        listen 443 ssl; # managed by Certbot
+        ssl_certificate /etc/letsencrypt/live/sa-utils.agora.io/fullchain.pem; # managed by Certbot
+        ssl_certificate_key /etc/letsencrypt/live/sa-utils.agora.io/privkey.pem; # managed by Certbot
+        include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+        root /home/ubuntu/AgoraWebSDK-NG/Demo;
+        index index.html index.htm index.nginx-debian.html;
+        server_name sokool.io sa-utils.agora.io; # managed by Certbot
+
+
+
+
+        location / {
+   	 # Simple requests
+    	if ($request_method ~* "(GET|POST)") {
+      		add_header "Access-Control-Allow-Origin"  *;
+    	}
+
+    	# Preflighted requests
+    	if ($request_method = OPTIONS ) {
+      		add_header "Access-Control-Allow-Origin"  *;
+      		add_header "Access-Control-Allow-Methods" "GET, POST, OPTIONS, HEAD";
+      		add_header "Access-Control-Allow-Headers" "Authorization, Origin, X-Requested-With, Content-Type, Accept";
+      		return 200;
+    	}
+
+  	}
+
+            location /ap/ {
+                    proxy_set_header X-User-Address $remote_addr;
+                    proxy_pass https://$arg_url;
+            }
+            location /cs/ {
+                    proxy_pass https://$arg_h:$arg_p/$arg_d;
+            }
+            location /rs/ {
+                    proxy_pass https://$arg_h:$arg_p/$arg_d;
+            }
+            location /ls/ {
+                    proxy_pass https://$arg_h:$arg_p/$arg_d;
+            }
+            location /ws/ {
+                    proxy_pass https://$arg_h:$arg_p;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+            }
+
+            location /up/ {
+        	    proxy_pass http://localhost:8080/upload/; 
+                    proxy_http_version 1.1;
+            }
+
+	 proxy_request_buffering off;
+	 location /upload {
+		    # Preflighted requests
+		    if ($request_method = OPTIONS ) {
+		      add_header "Access-Control-Allow-Origin"  *;
+		      add_header "Access-Control-Allow-Methods" "GET, POST, OPTIONS, HEAD";
+		      add_header "Access-Control-Allow-Headers" "Authorization, Origin, X-Requested-With, Content-Type, Accept";
+		      return 200;
+		    }
+  		add_header Access-Control-Allow-Origin *;
+ 		access_log  /var/log/nginx/postdata.log  postdata;
+		client_max_body_size 500m;
+ 	 	proxy_request_buffering off;
+         	proxy_pass http://localhost:8080; 
+		proxy_set_header X-File-Name bob;
+        }
+
+location /pupload {
+  client_body_temp_path      /tmp/;
+  client_body_in_file_only   on;
+  client_body_buffer_size    1M;
+  client_max_body_size       7G;
+
+  proxy_pass_request_headers on;
+  proxy_set_header           X-File-Name $request_body_file; 
+  proxy_set_body             off;
+  proxy_redirect             off;
+  proxy_pass http://localhost:8080; 
+}
+
+}       
+
