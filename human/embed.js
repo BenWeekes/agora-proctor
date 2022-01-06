@@ -161,13 +161,25 @@ export async function human_start(canvas, video) {
   	dom.canvas=canvas;
   if (dom.video!==video)
   	dom.video=video;
+
+console.log("human init0");
   if (!dom.init){ 
+	console.log("human init1");
+
    dom.init=true;
-   await drawLoop();
-   await human.load();
-   await human.warmup();
-   await detectionLoop();
+   setTimeout(() => {
+       init();
+   }, 200);
+
   }
+}
+
+async function init() {
+	console.log("human init");
+	   await drawLoop();
+	   await human.load();
+	   await human.warmup();
+	   await detectionLoop();
 }
 
 export function base64DecToArr(sBase64, nBlocksSize) {
