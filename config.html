@@ -1,0 +1,41 @@
+
+<script>
+
+function setAction(form) {
+  form.action = "http://sa-utils.agora.io:8081/upload";
+  return true;
+}
+
+</script>
+
+<br/>
+<h3>To rebrand the Agora Proctor demo please do the following:</h3>
+
+<br/>
+Take the default config.json file from here:
+<a href="https://github.com/AgoraIO-Solutions/Agora-Proctoring/blob/main/config.json">Default config.json</a>
+<br/>
+<br/>
+You can edit the title and colors
+<br/>
+<br/>
+To change the images for the logo and background you need to convert your new  PNG into base64.
+<br/>
+This can be done here. 
+<a href="https://www.base64-image.de/">Convert image to base64 </a>
+<br/>
+Use the COPY IMAGE button once converted and replace existing value in config.json
+<br/>
+<br/>
+You can remove any background from the logo PNG using 
+<a href="https://www.remove.bg">Remove background from PNG</a>
+<br/>
+<br/>
+For a solid background color, you just need a small square of the desired color
+<br/>
+Now upload your new config.json using the form below:
+<form onsubmit="return setAction(this)" method="post" enctype="multipart/form-data">
+<br>config.json
+<input type="file" name="uploads" >
+<input type="submit" value="Apply"></form>
+
