@@ -7,22 +7,28 @@ function setAction(form) {
 }
 
 </script>
-
+<body style="margin:40px; font-size:18px; font-family: 'Roboto', sans-serif;">
+<div style="padding:20px; font-size:28px;  position: absolute; top:0px; left:0px; width:100%; iheight:40px; background-color: purple; color: white;">
+	Proctor Demo Reskin
+</div>
 <br/>
-<h3>To rebrand the Agora Proctor demo please do the following:</h3>
+<br/>
+<h3>To reskin the proctor demo, please do the following:</h3>
 
 <br/>
 Take the default config.json file from here:
 <a download href="./config.json">config.json</a>
 <br/>
 <br/>
-You can edit the title and colors
+You can now edit the title and colors inside this file but keep the name as config.json
 <br/>
 <br/>
 To change the images for the logo and background you need to convert your new  PNG into base64.
 <br/>
+<br/>
 This can be done here. 
 <a href="https://www.base64-image.de/">Convert image to base64 </a>
+<br/>
 <br/>
 Use the COPY IMAGE button once converted and replace existing value in config.json
 <br/>
@@ -33,9 +39,10 @@ You can remove any background from the logo PNG using
 <br/>
 For a solid background color, you just need a small square of the desired color
 <br/>
+<br/>
 Now upload your new config.json using the form below:
 <form onsubmit="return setAction(this)" method="post" enctype="multipart/form-data">
-<br>config.json
+<br>
 <input type="file" name="uploads" >
-<input type="submit" value="Apply"></form>
+<input type="submit" value="Apply Changes"></form>
 
