@@ -8,12 +8,12 @@ var AgoraProctorUtils = (function () {
   const FaceSimilarity="FaceSimilarity";
   
   const BrowserChangeAlert="BrowserChangeAlert";
-  const Background="background";
-  const Foreground="foreground";
-  const VoiceActivityDetected="voiceActivityDetected";
+  const Background="Browser background";
+  const Foreground="Browser foreground";
+  const VoiceActivityDetected="Voice detected";
   
-  const Hidden="hidden";
-  const Resize="resize";
+  const Hidden="Browser hidden";
+  const Resize="Browser resized";
 
   const ResizeMinInterval=2000;
   const VADMinInterval=6000;
@@ -36,8 +36,10 @@ var AgoraProctorUtils = (function () {
   // private methods
   function init() {
     window.addEventListener('blur', function() {
-      AgoraProctorUtilEvents.emit(BrowserFocus, Background );   
-      AgoraProctorUtilEvents.emit(BrowserChangeAlert, Background );         
+      AgoraProctorUtilEvents.emit(BrowserFocus, Background );  
+      if (document.visibilityState!='hidden') {
+        AgoraProctorUtilEvents.emit(BrowserChangeAlert, Background );      
+      } 
     });
 
     window.addEventListener('focus', function() {
@@ -67,9 +69,7 @@ var AgoraProctorUtils = (function () {
   async function snap(video, preview) {
   
     var  ctx= preview.getContext('2d');
-    //ctx.canvas.width = 640;
-    //ctx.canvas.height = 480;
-    ctx.drawImage(video, 0, 0);//,640, 480,0,0,320,240);
+    ctx.drawImage(video, 0, 0);
     var image_data_uri=preview.toDataURL("image/jpeg", 0.9);
     var raw_image_data = image_data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
     var http = new XMLHttpRequest();
@@ -172,7 +172,6 @@ var AgoraProctorUtils = (function () {
     Hidden: Hidden,
     Resize: Resize,
     FaceDetected: FaceDetected,
-
   };
 
 })();
