@@ -4,14 +4,14 @@ import { AgoraProctorUtils, AgoraProctorUtilEvents } from "https://sa-utils.agor
 
 var humanConfig = {
   modelBasePath: "https://sa-utils.agora.io/agora-proctor/human/assets/models",
-  filter: { equalization: false },
+  filter: { equalization: true },
   face: {
     enabled: true,
     //detector: { rotation: true, return: true, cropFactor: 1.6, mask: false }, // return tensor is used to get detected face image
     detector: { rotation: true, return: true, cropFactor: 1.6, mask: false },
     //detector: { rotation: false}, // return tensor is used to get detected face image
-    description: { enabled: false },
-    iris: { enabled: false }, // needed to determine gaze direction
+    description: { enabled: true },
+    iris: { enabled: true }, // needed to determine gaze direction
     emotion: { enabled: false }, // not needed
     antispoof: { enabled: false }, // enable optional antispoof module
     liveness: { enabled: false }, // enable optional liveness module
