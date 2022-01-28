@@ -162,9 +162,9 @@ export async function human_start(canvas, video) {
   if (dom.video!==video)
   	dom.video=video;
 
-console.log("human init0");
+//console.log("human init0");
   if (!dom.init){ 
-	console.log("human init1");
+	//console.log("human init1");
 
    dom.init=true;
    setTimeout(() => {
