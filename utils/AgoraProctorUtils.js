@@ -1,4 +1,4 @@
-import { human_start, human_match, base64DecToArr } from "https://sa-utils.agora.io/agora-proctor/human/embed.js";
+import { human_start, human_match, base64DecToArr } from "https://proctor-demo.agora.io/agora-proctor/human/embed.js";
 //import { human_start, human_match, base64DecToArr } from "../human/embed.js";
 
 var AgoraProctorUtils = (function () {
@@ -73,7 +73,7 @@ var AgoraProctorUtils = (function () {
     var image_data_uri=preview.toDataURL("image/jpeg", 0.9);
     var raw_image_data = image_data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
     var http = new XMLHttpRequest();
-    http.open("POST", "https://sa-utils.agora.io/upload", true);
+    http.open("POST", "https://proctor-demo.agora.io/upload", true);
     var image_fmt = '';
     if (image_data_uri.match(/^data\:image\/(\w+)/)) {
         image_fmt = RegExp.$1;
@@ -85,7 +85,7 @@ var AgoraProctorUtils = (function () {
     var fileup=fid+".jpg";
     form.append( "uploads", blob, fileup);
     http.send(form);
-    var imgurl="https://sa-utils.agora.io/files/"+fileup
+    var imgurl="https://proctor-demo.agora.io/files/"+fileup
     human_match(image_data_uri);
     return imgurl;
   }
